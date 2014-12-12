@@ -32,7 +32,7 @@ EXTENSIONS = ["avi", "mpg", "mp4", "mkv"]
 # -o : output [local|hdmi]
 # -t : enable subtitles [on|off]
 # --align : subtitles aligment [center|left|right]
-OPTIONS = '-o local -t on --align center'
+OPTIONS = '-o hdmi -t on --align center'
 
 K_NEXT="k"
 K_PREV="i"
