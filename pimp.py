@@ -51,6 +51,32 @@ from os.path import isfile
 from os.path import isdir
 from os.path import expanduser
 from os.path import basename
+import urllib2, hashlib, os
+
+def get_hash(name):
+    "Calculates the hash from a moviefile"
+    readsize = 64 * 1024
+    with open(name, 'rb') as f:
+        size = os.path.getsize(name)
+        data = f.read(readsize)
+        f.seek(-readsize, os.SEEK_END)
+        data += f.read(readsize)
+        return hashlib.md5(data).hexdigest()
+
+
+def download_sub(movie):
+    "attemps downloading subtitles for the movie"
+    movieHash = get_hash(movie)
+    language = "en"
+    headers = {"user-agent":"SubDB/1.0 (pimp/0.5; http://github.com/lorgan3/pimp)"}
+
+    request = urllib2.Request("http://api.thesubdb.com/?action=download&hash=" + movieHash + "&language=" + language, None, headers)
+    file = urllib2.urlopen(request)
+
+    if (file.getcode() == 200):
+        output = open(movie[0:-3]+"srt","wb")
+        output.write(file.read())
+        output.close()
 
 
 def play(movie):
@@ -60,7 +86,13 @@ def play(movie):
     if isfile(sub):
         options = OPTIONS + ' --subtitles \"{0}\"'.format(sub)
     else:
-        options = OPTIONS
+        #Download the subs on the fly using thesubdb
+        download_sub(movie)
+        if isfile(sub):
+            options = OPTIONS + ' --subtitles \"{0}\"'.format(sub)
+        else:
+            options = OPTIONS
+            
     call(cmd.format(options, movie), shell=True)
     return(movie)
 
